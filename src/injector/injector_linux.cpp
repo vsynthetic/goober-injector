@@ -1,7 +1,9 @@
 #include "injector.hpp"
 #include <cstdio>
 #include <cstring>
+#include <iostream>
 #include <memory>
+#include <ostream>
 #include <sstream>
 #include <string>
 #include <sys/socket.h>
@@ -71,8 +73,6 @@ void injector::load_library(std::filesystem::path path, std::string processName)
 
     setvbuf(fp, NULL, _IONBF, 0);
 
-    char buf[256];
-    fread(buf, 256, 256, fp);
     fclose(fp);
 
     int status = 0;
