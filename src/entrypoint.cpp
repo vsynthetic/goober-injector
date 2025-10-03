@@ -60,14 +60,7 @@ int main(int argc, char* argv[]) {
         ImGui::InputText("Jar path", jar_path, 512);
         ImGui::InputText("Entrypoint", entrypoint, 256);
 
-        bool should_inject = ImGui::Button("Inject");
-
-        int loop_value = injector::get()->password_popup_loop();
-        if (loop_value == 1) {
-            return;
-        }
-
-        if (should_inject || loop_value == 2) {
+        if (ImGui::Button("Inject")) {
             std::ofstream config(path);
             if (config) {
                 config << dll_path << "\n";

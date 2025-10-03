@@ -1,4 +1,3 @@
-#include "imgui.h"
 #include "injector.hpp"
 #include <cstdio>
 #include <cstring>
@@ -14,36 +13,7 @@ std::shared_ptr<injector>& injector::get() {
     return instance;
 }
 
-static bool password_submitted = false;
-static char password[256];
-
-int injector::password_popup_loop() {
-    if (ImGui::IsPopupOpen("Enter password")) {
-        if (ImGui::BeginPopupModal("Enter password")) {
-            ImGui::InputText("Password", password, 256, ImGuiInputTextFlags_Password);
-
-            if (ImGui::Button("Submit")) {
-                password_submitted = true;
-                ImGui::CloseCurrentPopup();
-                ImGui::EndPopup();
-                return 2;
-            }
-
-            ImGui::EndPopup();
-        }
-        return 1;
-    }
-
-    return 0;
-}
-
 void injector::load_library(std::filesystem::path path, std::string processName) {
-    if (!password_submitted) {
-        memset(password, 0, 256);
-        ImGui::OpenPopup("Enter password", ImGuiPopupFlags_AnyPopupLevel);
-        return;
-    }
-
     int sv[2];
 
     if (socketpair(AF_UNIX, SOCK_STREAM, 0, sv) == -1) {
@@ -78,7 +48,7 @@ void injector::load_library(std::filesystem::path path, std::string processName)
         close(sv[1]);
 
         std::stringstream command;
-        command << "sudo -S gdb -batch-silent -p ";
+        command << "pkexec gdb -batch-silent -p ";
         command << "$(echo \"$(pidof " << processName << ")\" | cut -d \" \" -f 1) ";
         command << "-ex \"call (void*) dlopen(\\\"" << path.string() << "\\\", 2)\"";
 
@@ -101,11 +71,8 @@ void injector::load_library(std::filesystem::path path, std::string processName)
 
     setvbuf(fp, NULL, _IONBF, 0);
 
-    std::stringstream stream;
-    stream << password << "\n";
-    std::string out = stream.str();
-
-    fprintf(fp, "%s", out.c_str());
+    char buf[256];
+    fread(buf, 256, 256, fp);
     fclose(fp);
 
     int status = 0;

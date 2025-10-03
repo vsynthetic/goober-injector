@@ -11,6 +11,4 @@ public:
 
     void load_library(std::filesystem::path path, std::string processName);
 
-    int password_popup_loop();
-
 };
